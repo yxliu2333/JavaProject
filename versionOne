@@ -1,0 +1,166 @@
+package version.one;
+import java.util.Iterator;
+import java.util.Random;
+//运行别用小绿色图标，用右键
+//产生随机整数方法：new Random();调入包;random.nextInt();
+//在观看视频中发现老师使用的一些快捷键，没说是啥，但是根据效果描述百度了出来
+//1.ctr+alt+down/up快速把当前行复制到下面/上面
+//2.ctr+d快速删除当前行
+//3.选中多行，同时用tab或1或2
+//4.shift+点击，即可勾选大段文字
+//生成随机数的其他方法：Math.random();作用是给一个double型变量
+//sysout+Alt+"/"
+//先把codeArr复制，再输入for，再Alt+"/"，再把鼠标移动寻找合适的
+import java.util.Scanner;
+//程序员应该有的习惯（1时不时"ctr+s"以免断电死机2时不时"run as java app"以精准定位bug位置
+public class StoreCabinetBasic {
+	
+	public static Scanner input = new Scanner(System.in);
+	public static String[] numberArr = new String[100];//快递单号数组
+	public static String[] companyArr = new String[100];//快递公司数组
+	public static int[] codeArr = new int[100];//取件码数组
+	public static int index=0;//表示当前已经存放了多少柜子
+	public static Random random = new Random();
+	//由于int是4字节，char是2字节一个，出于节约空间应该用int，但是出于可能出现字母，还是用String
+	//得有一个地方作为快递单号、取件码、快递公司这类结构体信息的地方，以后用面向对象会更简洁
+	
+	public static void main(String[] args) {
+		//初始展示菜单
+		//本版本不能存为文件，只能当时造信息当时用，程序结束不保留
+		boolean i = true;
+		do {
+			startMenu();
+			System.out.println("是否继续？true/false");
+			i = input.nextBoolean();
+		}while(i);
+	}
+	
+	public static void startMenu() {
+		//做了一个封装
+		while(true) {
+			System.out.println("=======欢迎使用快递柜=======");
+			System.out.print("请输入身份：1-快递员；2-用户");
+			if(input.hasNextInt()) {
+				int id = input.nextInt();
+				if(id==1) {
+					//快递员，展示快递员功能菜单
+					deliveryManMenu();
+					break;
+				}else if(id==2) {
+					//用户，展示用户功能菜单
+					userMenu();
+					break;
+				}else {
+					System.out.println("您输入的是个锤子");
+				}
+				//如果我把上述if-else放在循环体最后，会报错“符号id未定义”
+			}else {
+				System.out.println("您输入的是个锤子");
+			}
+		}
+	}
+	/**
+	 * 用户菜单
+	 */
+	public static void userMenu() {
+		System.out.print("请输入取件码：");
+		//这里不采用循环，是避免假用户通过遍历去试出真用户的取件码
+		if(input.hasNextInt()) {
+			int code = input.nextInt();
+			for (int i = 0; i < index; i++) {
+				if(codeArr[i]==code) {
+					for (int j = i; j < index; j++) {
+						numberArr[j]=numberArr[j+1];
+						companyArr[j]=companyArr[j+1];
+						codeArr[j]=codeArr[j+1];
+					}
+					index--;//需要把该货柜的货物去除
+					System.out.println("取件成功");
+					return;
+				}
+			}
+		}else {
+			System.out.println("您输入的是个锤子");
+		}
+		System.out.println("取件失败");
+	}
+	/**
+	 * 快递员菜单
+	 */
+	public static void deliveryManMenu() {
+		System.out.print("请选择操作：1-存快递；2-删快递；3-改信息；4-查看所有快递");
+		while(true) {
+			if(input.hasNextInt()) {
+				int id = input.nextInt();
+				if(id==1) {
+					System.out.println("请输入快递单号：");
+					numberArr[index] = input.next();
+					System.out.println("请输入公司名称：");
+					companyArr[index] = input.next();
+					int code = 0;//如果在do-while循环中定义int，只能在一轮循环中使用，下一轮开辟新的空间
+					do {
+						code = random.nextInt(888)+111;//自动生成取件码111-999，使用（伪）随机数
+						//如果上面是字符串，最后只需+""，表示字符串的结束
+					}while(isExist(code));//保证取件码不重复
+					codeArr[index] = code;
+					System.out.println("快递已存入，取件码是"+codeArr[index]);
+					index++;
+					break;
+				}else if(id==2) {
+					System.out.println("请输入要删除的快递单号：");
+					String number = input.next();
+					for (int i = 0; i < index; i++) {
+						if(number.equals(numberArr[i])) {//找到
+							//Java不能用==判断字符串内容相等，只能判断其地址是否相等
+							for (int j = i; j < index; j++) {
+								numberArr[j]=numberArr[j+1];
+								companyArr[j]=companyArr[j+1];
+								codeArr[j]=codeArr[j+1];
+							}
+							System.out.println("删除成功");
+							index--;
+							return;
+						}
+					}
+					System.out.println("未找到快递");
+					break;
+				}else if(id==3) {
+					System.out.println("请输入要修改的快递单号：");
+					String number = input.next();
+					for (int i = 0; i < index; i++) {
+						if(number.equals(numberArr[i])) {//找到了
+							System.out.println("修改后的快递单号是：");
+							numberArr[i] = input.next();
+							System.out.println("修改后的快递公司名称是：");
+							companyArr[i] = input.next();
+							System.out.println("修改成功");
+							return;
+						}
+					}
+					System.out.println("未找到快递");
+					break;
+				}else if(id==4) {
+					for (int i = 0; i < index; i++) {
+						System.out.println(numberArr[i]+"\t"+companyArr[i]+"\t");
+					}
+					break;
+				}else {
+					System.out.println("您输入的是个锤子");
+				}
+			}else {
+				System.out.println("您输入的是个锤子");
+			}
+		}
+	}
+	
+	//判断取件码是否重复
+	public static boolean isExist(int code) {
+		for (int i = 0; i < index; i++) {
+			if(codeArr[i]==code) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+}
